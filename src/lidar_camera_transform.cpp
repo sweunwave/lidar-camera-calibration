@@ -20,8 +20,36 @@ public:
 private:
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
 
+    using namespace cv;
+
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
+    Mat img;
+	cvtColor(cv_ptr->image, img, COLOR_BGR2GRAY);
+    
+    Mat harris;
+	cornerHarris(img, harris, 3, 3, 0.02);
+
+	Mat harris_norm;
+	normalize(harris, harris_norm, 0, 255, NORM_MINMAX, CV_8U);
+    
+    for (int j = 1; j < harris.rows - 1; j++)
+	{
+		for (int i = 1; i < harris.cols - 1; i++)
+		{
+			if (harris_norm.at<uchar>(j, i) > 100) {
+				if (harris.at<float>(j, i) > harris.at<float>(j - 1, i) &&
+					harris.at<float>(j, i) > harris.at<float>(j + 1, i) &&
+					harris.at<float>(j, i) > harris.at<float>(j, i - 1) &&
+					harris.at<float>(j, i) > harris.at<float>(j, i + 1))
+				{
+					circle(cv_ptr->image, Point(i, j), 5, Scalar(0, 0, 255), 2);
+				}
+					
+			}
+		}
+	}
 
     cv::imshow("image", cv_ptr->image);
     cv::waitKey(1);
@@ -32,6 +60,9 @@ private:
     sensor_msgs::msg::Image::SharedPtr msg_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub_;
     size_t count_;
+
+    
+
 };
  
 int main(int argc, char *argv[]){
