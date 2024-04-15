@@ -1,1 +1,0 @@
-ament_cmake_symlink_install_targets("TARGET_FILES" "/home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration/lidar_camera_transform" "TARGETS" "lidar_camera_transform" "DESTINATION" "lib/lidar-camera-calibration")
