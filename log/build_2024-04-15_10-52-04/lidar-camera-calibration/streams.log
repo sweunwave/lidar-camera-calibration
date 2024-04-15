@@ -1,0 +1,38 @@
+[0.008s] Invoking command in '/home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration -- -j20 -l20
+[0.064s] [ 50%] [32mBuilding CXX object CMakeFiles/lidar_camera_transform.dir/src/lidar_camera_transform.cpp.o[0m
+[1.693s] [01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:[m[K In static member function ‘[01m[Kstatic void MinimalImagePublisher::on_mouse(int, int, int, int, void*)[m[K’:
+[1.693s] [01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:60:30:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kevent[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[1.693s]    60 |     static void on_mouse([01;35m[Kint event[m[K, int x, int y, int flags, void* userdata) {
+[1.693s]       |                          [01;35m[K~~~~^~~~~[m[K
+[1.693s] [01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:60:41:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kx[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[1.693s]    60 |     static void on_mouse(int event, [01;35m[Kint x[m[K, int y, int flags, void* userdata) {
+[1.693s]       |                                     [01;35m[K~~~~^[m[K
+[1.693s] [01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:60:48:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Ky[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[1.693s]    60 |     static void on_mouse(int event, int x, [01;35m[Kint y[m[K, int flags, void* userdata) {
+[1.693s]       |                                            [01;35m[K~~~~^[m[K
+[1.693s] [01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:60:68:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kuserdata[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[1.693s]    60 |     static void on_mouse(int event, int x, int y, int flags, [01;35m[Kvoid* userdata[m[K) {
+[1.693s]       |                                                              [01;35m[K~~~~~~^~~~~~~~[m[K
+[5.957s] [100%] [32m[1mLinking CXX executable lidar_camera_transform[0m
+[6.261s] [100%] Built target lidar_camera_transform
+[6.267s] Invoked command in '/home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration -- -j20 -l20
+[6.292s] Invoking command in '/home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration
+[6.301s] -- Install configuration: "Release"
+[6.301s] -- Execute custom install script
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/lib/lidar-camera-calibration/lidar_camera_transform
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/ament_index/resource_index/package_run_dependencies/lidar-camera-calibration
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/ament_index/resource_index/parent_prefix_path/lidar-camera-calibration
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/environment/ament_prefix_path.sh
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/environment/ament_prefix_path.dsv
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/environment/path.sh
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/environment/path.dsv
+[6.302s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/local_setup.bash
+[6.303s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/local_setup.sh
+[6.303s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/local_setup.zsh
+[6.303s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/local_setup.dsv
+[6.303s] -- Symlinking: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/package.dsv
+[6.309s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/ament_index/resource_index/packages/lidar-camera-calibration
+[6.309s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/cmake/lidar-camera-calibrationConfig.cmake
+[6.309s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/cmake/lidar-camera-calibrationConfig-version.cmake
+[6.309s] -- Up-to-date symlink: /home/sweun/ros2_ws/src/lidar-camera-calibration/install/lidar-camera-calibration/share/lidar-camera-calibration/package.xml
+[6.310s] Invoked command in '/home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/sweun/ros2_ws/src/lidar-camera-calibration/build/lidar-camera-calibration

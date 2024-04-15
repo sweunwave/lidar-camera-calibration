@@ -15,6 +15,11 @@ public:
         "/camera1/image_raw",
         10,
         std::bind(&MinimalImagePublisher::image_callback, this, std::placeholders::_1));
+        cv::namedWindow("image");
+        cv::setMouseCallback("image", &MinimalImagePublisher::on_mouse, this);
+        cv::waitKey(1);
+
+        
     }
 
 private:
@@ -24,44 +29,25 @@ private:
 
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-
-    Mat img;
-	cvtColor(cv_ptr->image, img, COLOR_BGR2GRAY);
     
-    Mat harris;
-	cornerHarris(img, harris, 3, 3, 0.02);
+    cv::Mat image = cv_ptr->image;
 
-	Mat harris_norm;
-	normalize(harris, harris_norm, 0, 255, NORM_MINMAX, CV_8U);
-    
-    for (int j = 1; j < harris.rows - 1; j++)
-	{
-		for (int i = 1; i < harris.cols - 1; i++)
-		{
-			if (harris_norm.at<uchar>(j, i) > 100) {
-				if (harris.at<float>(j, i) > harris.at<float>(j - 1, i) &&
-					harris.at<float>(j, i) > harris.at<float>(j + 1, i) &&
-					harris.at<float>(j, i) > harris.at<float>(j, i - 1) &&
-					harris.at<float>(j, i) > harris.at<float>(j, i + 1))
-				{
-					circle(cv_ptr->image, Point(i, j), 5, Scalar(0, 0, 255), 2);
-				}
-					
-			}
-		}
-	}
+    cv::imshow("image", image);
+    // cv::setMouseCallback("image", &MinimalImagePublisher::on_mouse, this);
+    // cv::waitKey(1);
 
-    cv::imshow("image", cv_ptr->image);
-    cv::waitKey(1);
+    }
 
+    static void on_mouse(int event, int x, int y, int flags, void* userdata) {
+        if (event == cv::EVENT_LBUTTONDOWN) {
+            std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
+            }
     }
 
     rclcpp::TimerBase::SharedPtr timer_;
     sensor_msgs::msg::Image::SharedPtr msg_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub_;
     size_t count_;
-
-    
 
 };
  

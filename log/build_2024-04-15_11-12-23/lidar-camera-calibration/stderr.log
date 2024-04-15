@@ -1,0 +1,13 @@
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:[m[K In static member function ‘[01m[Kstatic void MinimalImagePublisher::on_mouse(int, int, int, int, void*)[m[K’:
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:62:30:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kevent[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   62 |     static void on_mouse([01;35m[Kint event[m[K, int x, int y, int flags, void* userdata) {
+      |                          [01;35m[K~~~~^~~~~[m[K
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:62:41:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kx[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   62 |     static void on_mouse(int event, [01;35m[Kint x[m[K, int y, int flags, void* userdata) {
+      |                                     [01;35m[K~~~~^[m[K
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:62:48:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Ky[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   62 |     static void on_mouse(int event, int x, [01;35m[Kint y[m[K, int flags, void* userdata) {
+      |                                            [01;35m[K~~~~^[m[K
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:62:68:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kuserdata[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   62 |     static void on_mouse(int event, int x, int y, int flags, [01;35m[Kvoid* userdata[m[K) {
+      |                                                              [01;35m[K~~~~~~^~~~~~~~[m[K

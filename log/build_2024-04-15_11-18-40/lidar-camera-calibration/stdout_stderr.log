@@ -1,0 +1,16 @@
+[35m[1mConsolidate compiler generated dependencies of target lidar_camera_transform[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/lidar_camera_transform.dir/src/lidar_camera_transform.cpp.o[0m
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:[m[K In member function ‘[01m[Kvoid MinimalImagePublisher::image_callback(sensor_msgs::msg::Image_<std::allocator<void> >::SharedPtr)[m[K’:
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:59:5:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K}[m[K’ token
+   59 |     [01;31m[K}[m[K
+      |     [01;31m[K^[m[K
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:[m[K In static member function ‘[01m[Kstatic void MinimalImagePublisher::on_mouse(int, int, int, int, void*)[m[K’:
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:61:55:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kflags[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   61 |     static void on_mouse(int event, int x, int y, [01;35m[Kint flags[m[K, void* userdata) {
+      |                                                   [01;35m[K~~~~^~~~~[m[K
+[01m[K/home/sweun/ros2_ws/src/lidar-camera-calibration/src/lidar_camera_transform.cpp:61:68:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kuserdata[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+   61 |     static void on_mouse(int event, int x, int y, int flags, [01;35m[Kvoid* userdata[m[K) {
+      |                                                              [01;35m[K~~~~~~^~~~~~~~[m[K
+gmake[2]: *** [CMakeFiles/lidar_camera_transform.dir/build.make:76: CMakeFiles/lidar_camera_transform.dir/src/lidar_camera_transform.cpp.o] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:137: CMakeFiles/lidar_camera_transform.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2
