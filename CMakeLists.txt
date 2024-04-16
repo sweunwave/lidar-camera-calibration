@@ -15,12 +15,12 @@ find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
 
-add_executable(lidar_camera_transform src/lidar_camera_transform.cpp)
-ament_target_dependencies(lidar_camera_transform rclcpp std_msgs sensor_msgs cv_bridge OpenCV image_transport)
+add_executable(lidar_camera_projection src/lidar_camera_projection.cpp)
+ament_target_dependencies(lidar_camera_projection rclcpp std_msgs sensor_msgs cv_bridge OpenCV image_transport)
 
 # install
 install(TARGETS
-  lidar_camera_transform
+  lidar_camera_projection
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -36,6 +36,8 @@ install(PROGRAMS
 #install the launch, rviz directory
 install(DIRECTORY
   rviz
+  launch
+  params
   DESTINATION share/${PROJECT_NAME}/
  )
 

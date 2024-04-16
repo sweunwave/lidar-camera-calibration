@@ -1,5 +1,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "std_msgs/msg/header.hpp"
 #include <chrono>
 #include <cv_bridge/cv_bridge.h> 
@@ -10,53 +11,56 @@ using namespace std::chrono_literals;
  
 class MinimalImagePublisher : public rclcpp::Node {
 public:
-    MinimalImagePublisher() : Node("opencv_image_sub") {
+    MinimalImagePublisher() : Node("lidar_camera_projection") {
     img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
         "/camera1/image_raw",
         10,
         std::bind(&MinimalImagePublisher::image_callback, this, std::placeholders::_1));
-        cv::namedWindow("image");
-        cv::setMouseCallback("image", &MinimalImagePublisher::on_mouse, this);
-        cv::waitKey(1);
 
-        
+    lidar_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
+        "/ouster/points",
+        10,
+        std::bind(&MinimalImagePublisher::lidar_callback, this, std::placeholders::_1));
+
+    is_lidar = false;
     }
 
 private:
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
 
-    using namespace cv;
-
     cv_bridge::CvImagePtr cv_ptr;
     cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     
-    cv::Mat image = cv_ptr->image;
-
-    cv::imshow("image", image);
-    // cv::setMouseCallback("image", &MinimalImagePublisher::on_mouse, this);
-    // cv::waitKey(1);
+    if (is_lidar) {
+        std::cout << lidar_msg_->header.stamp.nanosec << std::endl;
+    }
 
     }
 
-    static void on_mouse(int event, int x, int y, int flags, void* userdata) {
-        if (event == cv::EVENT_LBUTTONDOWN) {
-            std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
-            }
+    void lidar_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+
+    lidar_msg_ = msg;
+
     }
 
+
+    cv_bridge::CvImagePtr cv_ptr;
     rclcpp::TimerBase::SharedPtr timer_;
-    sensor_msgs::msg::Image::SharedPtr msg_;
+
+    sensor_msgs::msg::Image::SharedPtr img_msg_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub_;
+
+    sensor_msgs::msg::PointCloud2::SharedPtr lidar_msg_;
+    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_sub_;
+
+    bool is_lidar;
     size_t count_;
 
 };
  
 int main(int argc, char *argv[]){
     rclcpp::init(argc, argv);
-    // create a ros2 node
     auto node = std::make_shared<MinimalImagePublisher>();
-
-    // process ros2 callbacks until receiving a SIGINT (ctrl-c)
     rclcpp::spin(node);
     rclcpp::shutdown();
 
