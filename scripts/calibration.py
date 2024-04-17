@@ -7,6 +7,7 @@ LiDAR - Camera Calibration based on ROS2
 
 import rclpy
 import rclpy.client
+import rclpy.logging
 from rclpy.node import Node
 
 from cv_bridge import CvBridge 
@@ -48,7 +49,7 @@ class CalibrationProcess(Node):
 
         # camera
         self.bridge = CvBridge()
-        self.selected_2d_pos = np.empty((0, 2), dtype=np.uint8)
+        self.selected_2d_pos = np.empty((0, 2), dtype=np.float32)
         self.is_img = False
         self.is_thread_running = True
         
@@ -93,15 +94,22 @@ class CalibrationProcess(Node):
 
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.is_thread_running = False
-
-            retval, rvec, tvec = cv2.solvePnP(self.selected_3d_points, self.selected_2d_pos.astype(np.float32), self.CAMERA_INTRINSIC_MATRIX,
-                                              self.DIST_COEFFS, rvec=None, tvec=None, useExtrinsicGuess=None, flags=None)
-            rotation_matrix, _ = cv2.Rodrigues(rvec)
-            transform_matrix = np.hstack((rotation_matrix, tvec))
             
+            retval, rvec, tvec = cv2.solvePnP(self.selected_3d_points, self.selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX,
+                                              self.DIST_COEFFS, rvec=None, tvec=None, useExtrinsicGuess=None, flags=None)
+            
+            # rotation_matrix, _ = cv2.Rodrigues(rvec)
+            # transform_matrix = np.hstack((rotation_matrix, tvec))
+            
+            retval, rotation_vector, translation_vector, inliers = cv2.solvePnPRansac(self.selected_3d_points, 
+                self.selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX, self.DIST_COEFFS, flags=cv2.SOLVEPNP_ITERATIVE)
+
             print()
-            print(f"rvec \n{rvec}")
-            print(f"tvec \n{tvec}")
+            print(f"rvec \n{rotation_vector}")
+            print(f"rvec solve \n{rvec}")
+
+            print(f"tvec \n{translation_vector}")
+            print(f"tvec solve \n{tvec}")
             # print(f"rotation_matrix \n{rotation_matrix}")
             # print(f"transform_matrix \n{transform_matrix}")
 
