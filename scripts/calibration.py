@@ -26,17 +26,18 @@ from threading import Thread
 #     [0.000000, 0.000000, 1.000000]
 # ])
 
-DIST_COEFFS = np.array([0.045021, -0.069708, -0.005911, -0.016257, 0.000000])
+# DIST_COEFFS = np.array([0.045021, -0.069708, -0.005911, -0.016257, 0.000000])
 
 class CalibrationProcess(Node):
     def __init__(self):
         super().__init__('image_process')
 
-        self.declare_parameter('camera_intrinsic_path', rclpy.Parameter.Type.STRING)
-        json_path = self.get_parameter('camera_intrinsic_path')
+        self.declare_parameter('camera_params_path', rclpy.Parameter.Type.STRING)
+        json_path = self.get_parameter('camera_params_path')
         json_data = self.read_json_file(json_path.value)
 
         self.CAMERA_INTRINSIC_MATRIX = np.array(json_data['intrinsic_matrix'])
+        self.DIST_COEFFS = np.array(json_data['dist_coeffs'])
 
         # subscriber
         self.img_sub = self.create_subscription(Image, "/camera1/image_raw", self.image_callback, 10)
@@ -62,7 +63,6 @@ class CalibrationProcess(Node):
     def image_callback(self, msg):
         img = self.bridge.imgmsg_to_cv2(msg)
         self.img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        self.img_time = msg.header.stamp.sec
         self.is_img =True
 
     def point_callback(self, msg):
@@ -93,11 +93,9 @@ class CalibrationProcess(Node):
 
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.is_thread_running = False
-            cv2.destroyAllWindows()
 
             retval, rvec, tvec = cv2.solvePnP(self.selected_3d_points, self.selected_2d_pos.astype(np.float32), self.CAMERA_INTRINSIC_MATRIX,
-                                              DIST_COEFFS, rvec=None, tvec=None, useExtrinsicGuess=None, flags=None)
-            
+                                              self.DIST_COEFFS, rvec=None, tvec=None, useExtrinsicGuess=None, flags=None)
             rotation_matrix, _ = cv2.Rodrigues(rvec)
             transform_matrix = np.hstack((rotation_matrix, tvec))
             
@@ -106,9 +104,6 @@ class CalibrationProcess(Node):
             print(f"tvec \n{tvec}")
             # print(f"rotation_matrix \n{rotation_matrix}")
             # print(f"transform_matrix \n{transform_matrix}")
-
-            self.transform_dict['rvec'] = rvec
-            self.transform_dict['tvec'] = tvec
 
     def read_json_file(self, file_path:str) -> dict:
         with open(file_path, 'r') as json_file:

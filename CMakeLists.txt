@@ -14,13 +14,19 @@ find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(pcl_ros REQUIRED)
 
 add_executable(lidar_camera_projection src/lidar_camera_projection.cpp)
-ament_target_dependencies(lidar_camera_projection rclcpp std_msgs sensor_msgs cv_bridge OpenCV image_transport)
+ament_target_dependencies(lidar_camera_projection rclcpp std_msgs sensor_msgs cv_bridge OpenCV image_transport pcl_conversions pcl_ros)
+
+add_executable(pcl_test src/pcl_test.cpp)
+ament_target_dependencies(pcl_test rclcpp std_msgs sensor_msgs pcl_conversions pcl_ros)
 
 # install
 install(TARGETS
   lidar_camera_projection
+  pcl_test
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -36,8 +42,8 @@ install(PROGRAMS
 #install the launch, rviz directory
 install(DIRECTORY
   rviz
-  launch
   params
+  launch
   DESTINATION share/${PROJECT_NAME}/
  )
 

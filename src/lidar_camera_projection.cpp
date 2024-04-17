@@ -1,3 +1,8 @@
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types.h>
+#include <pcl/PCLPointCloud2.h>
+#include <pcl/conversions.h>
+
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
@@ -7,44 +12,131 @@
 #include <image_transport/image_transport.hpp> 
 #include <opencv2/opencv.hpp> 
 
+#include <string>
+#include <vector>
+#include <typeinfo>
+#include <jsoncpp/json/json.h>
+#include <jsoncpp/json/value.h>
+
 using namespace std::chrono_literals;
  
 class MinimalImagePublisher : public rclcpp::Node {
 public:
     MinimalImagePublisher() : Node("lidar_camera_projection") {
-    img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
-        "/camera1/image_raw",
-        10,
-        std::bind(&MinimalImagePublisher::image_callback, this, std::placeholders::_1));
+        img_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
+            "/camera1/image_raw",
+            10,
+            std::bind(&MinimalImagePublisher::image_callback, this, std::placeholders::_1));
 
-    lidar_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
-        "/ouster/points",
-        10,
-        std::bind(&MinimalImagePublisher::lidar_callback, this, std::placeholders::_1));
+        lidar_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
+            "/ouster/points",
+            10,
+            std::bind(&MinimalImagePublisher::lidar_callback, this, std::placeholders::_1));
 
-    is_lidar = false;
+        std::string calibration_params_path;
+        this->declare_parameter<std::string>("calibration_params_path");
+        this->get_parameter("calibration_params_path", calibration_params_path);
+
+        std::string camera_params_path;
+        this->declare_parameter<std::string>("camera_params_path");
+        this->get_parameter("camera_params_path", camera_params_path);
+    
+        std::cout << calibration_params_path << std::endl;
+        std::cout << camera_params_path << std::endl;
+
+        Json::Reader calib_reader, camera_reader;
+        Json::Value calib_actual_json, camera_actual_json;
+
+        std::ifstream calib_file(calibration_params_path);
+        calib_reader.parse(calib_file, calib_actual_json);
+
+        std::ifstream camera_intrinsic_file(camera_params_path);
+        camera_reader.parse(camera_intrinsic_file, camera_actual_json);
+        
+        json_to_mat(calib_actual_json["rvec"], rvec);
+        json_to_mat(calib_actual_json["tvec"], tvec);
+        json_to_mat(camera_actual_json["intrinsic_matrix"], camera_intrinsic_matrix);
+        json_to_mat(camera_actual_json["dist_coeffs"], camera_dist_coeff);
+
+        std::cout << "rvec: \n" << rvec << std::endl;
+        std::cout << "tvec: \n" << tvec << std::endl;
+        std::cout << "intrinsic_matrix: \n" << camera_intrinsic_matrix << std::endl;
+        std::cout << "dist_coeffs: \n" << camera_dist_coeff << std::endl;
+
+        is_lidar = false;
+        is_img = false;
     }
 
 private:
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
 
-    cv_bridge::CvImagePtr cv_ptr;
-    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-    
-    if (is_lidar) {
-        std::cout << lidar_msg_->header.stamp.nanosec << std::endl;
-    }
+        cv_bridge::CvImagePtr cv_ptr;
+        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
+        is_img = true;
+        if (is_lidar) {
+            // std::cout << lidar_msg_->header.stamp.nanosec << std::endl;
+            // std::cout << "in image callback size: " << ptr_cloud->size() << std::endl;
+            // std::cout << "x: " << ptr_cloud->points[0].x << "/ y: " << ptr_cloud->points[0].y << "/ z: " << ptr_cloud->points[0].y << "/ i: " << ptr_cloud->points[0].intensity << std::endl;
+        }
 
     }
 
     void lidar_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
+        lidar_msg_ = msg;
 
-    lidar_msg_ = msg;
+        pcl::PointCloud<pcl::PointXYZI> cloud_dst;
+        pcl::fromROSMsg(*msg, cloud_dst);
+        ptr_cloud.reset(new pcl::PointCloud<pcl::PointXYZI>);
+        *ptr_cloud = cloud_dst;
 
+        // std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+
+        // std::vector<cv::Point3f> points_3d;
+        // for (const auto &point : cloud_dst){
+        //     points_3d.push_back(cv::Point3f(point.x, point.y, point.z));
+        // }
+
+        std::vector<cv::Point3f> points_3d;
+        points_3d.reserve(cloud_dst.size());
+
+        std::transform(cloud_dst.begin(), cloud_dst.end(), std::back_inserter(points_3d),
+                       [](const pcl::PointXYZI& point) {
+                           return cv::Point3f(point.x, point.y, point.z);
+                       });
+
+        // std::chrono::duration<double>sec = std::chrono::system_clock::now() - start;
+        // std::cout << "실행 시간(초) : " << sec.count() <<" seconds"<< std::endl;        
+        // std::cout << "points: " << points_3d.size() << std::endl;
+        // std::cout << "x: " << points_3d[0].x << "/ y: " << points_3d[0].y << "/ z: " << points_3d[0].y << std::endl;
+
+        cv::Mat img_points, jacobian;
+        cv::projectPoints(points_3d, rvec, tvec, camera_intrinsic_matrix, camera_dist_coeff, img_points, jacobian);
+
+        // for (int i = 0; i < img_points.rows; ++i) {
+        //     for (int j = 0; j < img_points.cols; ++j) {
+        //         cv::Point img_point = img_points.at<cv::Point2f>(i, j);
+        //         // std::cout << "Point2f at (" << i << ", " << j << "): " << img_point << std::endl;
+        //     }
+        // }
+
+        // if (is_img){
+        //     std::cout << <<
+        // }
+
+        is_lidar = true;
     }
 
+    void json_to_mat(const Json::Value &jsonValue, cv::Mat &mat) {
+        mat = cv::Mat(jsonValue.size(), jsonValue[0].size(), CV_64F);
 
-    cv_bridge::CvImagePtr cv_ptr;
+        for (int i = 0; i < jsonValue.size(); ++i) {
+            for (int j = 0; j < jsonValue[0].size(); ++j) {
+                mat.at<double>(i, j) = jsonValue[i][j].asDouble();
+            }
+        }
+    }
+
     rclcpp::TimerBase::SharedPtr timer_;
 
     sensor_msgs::msg::Image::SharedPtr img_msg_;
@@ -53,7 +145,10 @@ private:
     sensor_msgs::msg::PointCloud2::SharedPtr lidar_msg_;
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_sub_;
 
-    bool is_lidar;
+    cv::Mat rvec, tvec, camera_intrinsic_matrix, camera_dist_coeff;
+    pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cloud;
+
+    bool is_lidar, is_img;
     size_t count_;
 
 };
