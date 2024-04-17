@@ -6,6 +6,7 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
+        - /PointCloud21
         - /PointCloud1
       Splitter Ratio: 0.5
     Tree Height: 627
@@ -64,14 +65,14 @@ Visualization Manager:
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
-      Max Intensity: 3429
+      Max Intensity: 3399
       Min Color: 0; 0; 0
       Min Intensity: 1
       Name: PointCloud2
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.009999999776482582
+      Size (m): 0.00800000037997961
       Style: Flat Squares
       Topic:
         Depth: 5
@@ -192,7 +193,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 4.663698673248291
+      Distance: 1.8765127658843994
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -207,10 +208,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3747417628765106
+      Pitch: 0.019741851836442947
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.455158710479736
+      Yaw: 4.120157241821289
     Saved: ~
 Window Geometry:
   Displays:
@@ -230,5 +231,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1200
-  X: 2343
-  Y: 97
+  X: 653
+  Y: 164
