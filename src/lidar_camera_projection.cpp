@@ -70,16 +70,17 @@ public:
 private:
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
 
-        cv_bridge::CvImagePtr cv_ptr;
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
         is_img = true;
-        if (is_lidar) {
-            // std::cout << lidar_msg_->header.stamp.nanosec << std::endl;
-            // std::cout << "in image callback size: " << ptr_cloud->size() << std::endl;
-            // std::cout << "x: " << ptr_cloud->points[0].x << "/ y: " << ptr_cloud->points[0].y << "/ z: " << ptr_cloud->points[0].y << "/ i: " << ptr_cloud->points[0].intensity << std::endl;
-        }
 
+        if (is_lidar) {
+            for (const auto &point : inRange_img_points){
+                cv::circle(cv_ptr->image, point, 1, cv::Scalar(0, 0, 255), 1);
+            }
+        }
+        cv::imshow("projection_image", cv_ptr->image);
+        cv::waitKey(1);
     }
 
     void lidar_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
@@ -92,11 +93,6 @@ private:
 
         // std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
 
-        // std::vector<cv::Point3f> points_3d;
-        // for (const auto &point : cloud_dst){
-        //     points_3d.push_back(cv::Point3f(point.x, point.y, point.z));
-        // }
-
         std::vector<cv::Point3f> points_3d;
         points_3d.reserve(cloud_dst.size());
 
@@ -107,22 +103,21 @@ private:
 
         // std::chrono::duration<double>sec = std::chrono::system_clock::now() - start;
         // std::cout << "실행 시간(초) : " << sec.count() <<" seconds"<< std::endl;        
-        // std::cout << "points: " << points_3d.size() << std::endl;
-        // std::cout << "x: " << points_3d[0].x << "/ y: " << points_3d[0].y << "/ z: " << points_3d[0].y << std::endl;
 
         cv::Mat img_points, jacobian;
         cv::projectPoints(points_3d, rvec, tvec, camera_intrinsic_matrix, camera_dist_coeff, img_points, jacobian);
 
-        // for (int i = 0; i < img_points.rows; ++i) {
-        //     for (int j = 0; j < img_points.cols; ++j) {
-        //         cv::Point img_point = img_points.at<cv::Point2f>(i, j);
-        //         // std::cout << "Point2f at (" << i << ", " << j << "): " << img_point << std::endl;
-        //     }
-        // }
-
-        // if (is_img){
-        //     std::cout << <<
-        // }
+        if (is_img){
+            inRange_img_points.clear();
+            for (int i = 0; i < img_points.rows; ++i) {
+                for (int j = 0; j < img_points.cols; ++j) {
+                    cv::Point img_point = img_points.at<cv::Point2f>(i, j);
+                    if (img_point.x <= cv_ptr->image.size().width && img_point.x >= 0 && img_point.y <= cv_ptr->image.size().height && img_point.y >= 0) {
+                        inRange_img_points.push_back(img_point);
+                    }
+                }
+            }
+        }
 
         is_lidar = true;
     }
@@ -137,6 +132,9 @@ private:
         }
     }
 
+
+    cv_bridge::CvImagePtr cv_ptr;
+    
     rclcpp::TimerBase::SharedPtr timer_;
 
     sensor_msgs::msg::Image::SharedPtr img_msg_;
@@ -147,6 +145,7 @@ private:
 
     cv::Mat rvec, tvec, camera_intrinsic_matrix, camera_dist_coeff;
     pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cloud;
+    std::vector<cv::Point> inRange_img_points;
 
     bool is_lidar, is_img;
     size_t count_;
