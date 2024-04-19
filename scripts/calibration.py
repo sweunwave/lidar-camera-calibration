@@ -52,7 +52,8 @@ class CalibrationProcess(Node):
         self.selected_2d_pos = np.empty((0, 2), dtype=np.float32)
         self.is_img = False
         self.is_thread_running = True
-        
+        self.pre_img = None
+
         # lidar
         self.selected_3d_points = np.empty((0, 3), dtype=np.float32)
         self.selected_3d_msg = PointCloud() 
@@ -64,6 +65,7 @@ class CalibrationProcess(Node):
     def image_callback(self, msg):
         img = self.bridge.imgmsg_to_cv2(msg)
         self.img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self.origin_img = self.img.copy()
         self.is_img =True
 
     def point_callback(self, msg):
@@ -86,11 +88,28 @@ class CalibrationProcess(Node):
                 cv2.setMouseCallback("image", self.mouse_callback)
                 cv2.waitKey(1)
 
+
+
     def mouse_callback(self, event, x, y, flags, param):
-        if event == cv2.EVENT_LBUTTONDOWN:
-            cv2.circle(self.img, (x, y), 5, (255, 0, 0), -1)
+        if event == cv2.EVENT_LBUTTONDOWN and flags != cv2.EVENT_FLAG_CTRLKEY+1:
+            # cv2.circle(self.img, (x, y), 5, (255, 0, 0), -1)
             self.selected_2d_pos = np.append(self.selected_2d_pos, np.array([[x, y]]), axis=0)
             print(f"2D image position : \n{self.selected_2d_pos}")
+
+            for point in self.selected_2d_pos:
+                    cv2.circle(self.img, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+
+        elif event == cv2.EVENT_LBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+1:
+            if len(self.selected_2d_pos) > 0:
+                self.selected_2d_pos = np.delete(self.selected_2d_pos, -1, axis=0)
+                print(f"2D image position 2: \n{self.selected_2d_pos}")
+
+                self.img = self.origin_img.copy()
+                for point in self.selected_2d_pos:
+                    cv2.circle(self.img, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+                cv2.imshow("image", self.img)
+            else:
+                print("any points did not selected")
 
         elif event == cv2.EVENT_MBUTTONDOWN:
             self.is_thread_running = False
@@ -105,10 +124,10 @@ class CalibrationProcess(Node):
                 self.selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX, self.DIST_COEFFS, flags=cv2.SOLVEPNP_ITERATIVE)
 
             print()
-            print(f"rvec \n{rotation_vector}")
+            print(f"rvec solveRansac\n{rotation_vector}")
             print(f"rvec solve \n{rvec}")
 
-            print(f"tvec \n{translation_vector}")
+            print(f"tvec solveRansac\n{translation_vector}")
             print(f"tvec solve \n{tvec}")
             # print(f"rotation_matrix \n{rotation_matrix}")
             # print(f"transform_matrix \n{transform_matrix}")
