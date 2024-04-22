@@ -21,14 +21,6 @@ import json
 import numpy as np
 from threading import Thread
 
-# CAMERA_INTRINSIC_MATRIX = np.array([
-#     [789.455662, 0.000000, 240.876141],
-#     [0.000000, 791.255982, 228.114844],
-#     [0.000000, 0.000000, 1.000000]
-# ])
-
-# DIST_COEFFS = np.array([0.045021, -0.069708, -0.005911, -0.016257, 0.000000])
-
 class CalibrationProcess(Node):
     def __init__(self):
         super().__init__('image_process')
@@ -125,28 +117,48 @@ class CalibrationProcess(Node):
                 cv2.imshow("image", self.img)
             else:
                 print("any points did not selected")
-        # elif event == cv2.EVENT_MBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+1:
+                
+        elif event == cv2.EVENT_MBUTTONDOWN and flags != cv2.EVENT_FLAG_CTRLKEY+4:
+            # merge to total
+            self.total_selected_3d_points = np.append(self.total_selected_3d_points, self.selected_3d_points, axis=0)
+            self.total_selected_2d_pos = np.append(self.total_selected_2d_pos, self.selected_2d_pos, axis=0)
 
-        elif event == cv2.EVENT_MBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+1:
-            self.is_thread_running = False
+            # re-init
+            self.selected_2d_pos = np.empty((0, 2), dtype=np.float32)
+            self.selected_3d_points = np.empty((0, 3), dtype=np.float32)
             
-            retval, rvec, tvec = cv2.solvePnP(self.selected_3d_points, self.selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX,
-                                              self.DIST_COEFFS, rvec=None, tvec=None, useExtrinsicGuess=None, flags=None)
-            
-            # rotation_matrix, _ = cv2.Rodrigues(rvec)
-            # transform_matrix = np.hstack((rotation_matrix, tvec))
-            
-            retval, rotation_vector, translation_vector, inliers = cv2.solvePnPRansac(self.selected_3d_points, 
-                self.selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX, self.DIST_COEFFS, flags=cv2.SOLVEPNP_ITERATIVE)
+            self.selected_3d_msg.points.clear()
+            self.points_pub.publish(self.selected_3d_msg)
 
-            print()
-            print(f"rvec solveRansac\n{rotation_vector}")
-            print(f"rvec solve \n{rvec}")
+            self.img = self.origin_img.copy()
+            for point in self.selected_2d_pos:
+                cv2.circle(self.img, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+            cv2.imshow("image", self.img)
 
-            print(f"tvec solveRansac\n{translation_vector}")
-            print(f"tvec solve \n{tvec}")
-            # print(f"rotation_matrix \n{rotation_matrix}")
-            # print(f"transform_matrix \n{transform_matrix}")
+            print(f"num of total 3d points : {len(self.total_selected_3d_points)}")
+            print(f"num of total 2d pos    : {len(self.total_selected_2d_pos)}")
+
+        elif event == cv2.EVENT_MBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+4:
+            if len(self.total_selected_3d_points) >= 6:
+                self.is_thread_running = False
+
+                retval, rvec, tvec = cv2.solvePnP(self.total_selected_3d_points, self.total_selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX,
+                                                  self.DIST_COEFFS, rvec=None, tvec=None, useExtrinsicGuess=None, flags=None)
+
+                # rotation_matrix, _ = cv2.Rodrigues(rvec)
+                # transform_matrix = np.hstack((rotation_matrix, tvec))
+
+                retval, rotation_vector, translation_vector, inliers = cv2.solvePnPRansac(self.total_selected_3d_points, 
+                    self.total_selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX, self.DIST_COEFFS, flags=cv2.SOLVEPNP_ITERATIVE)
+
+                print()
+                print(f"rvec solveRansac\n{rotation_vector}")
+                print(f"rvec solve \n{rvec}")
+
+                print(f"tvec solveRansac\n{translation_vector}")
+                print(f"tvec solve \n{tvec}")
+            else:
+                print("Must select at least 6 points")
 
     def read_json_file(self, file_path:str) -> dict:
         with open(file_path, 'r') as json_file:
