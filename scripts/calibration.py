@@ -50,17 +50,17 @@ class CalibrationProcess(Node):
         # camera
         self.bridge = CvBridge()
         self.selected_2d_pos = np.empty((0, 2), dtype=np.float32)
+        self.total_selected_2d_pos = np.empty((0, 2), dtype=np.float32)
         self.is_img = False
         self.is_thread_running = True
         self.pre_img = None
+        self.selection_turn_3d_points = False # 3d lidar point 를 선택 할 차례인지 아닌지 통제
 
         # lidar
         self.selected_3d_points = np.empty((0, 3), dtype=np.float32)
+        self.total_selected_3d_points = np.empty((0, 3), dtype=np.float32)
         self.selected_3d_msg = PointCloud() 
         self.is_points = False
-
-        # transform matrix
-        self.transform_dict = {}
 
     def image_callback(self, msg):
         img = self.bridge.imgmsg_to_cv2(msg)
@@ -69,17 +69,20 @@ class CalibrationProcess(Node):
         self.is_img =True
 
     def point_callback(self, msg):
-        self.selected_3d_points = np.append(self.selected_3d_points, np.array([[msg.point.x, msg.point.y, msg.point.z]]), axis=0)
-        print(f"3D Points : \n{self.selected_3d_points}")
-
         self.selected_3d_msg.header = msg.header
         self.selected_3d_msg.header.frame_id = "os_sensor"
 
         points = Point32()
         points.x, points.y, points.z = msg.point.x, msg.point.y, msg.point.z
-        self.selected_3d_msg.points.append(points)
-        self.points_pub.publish(self.selected_3d_msg)
-        self.is_points =True
+
+        if len(self.selected_2d_pos) > 0 and self.selection_turn_3d_points:
+            self.selected_3d_points = np.append(self.selected_3d_points, np.array([[msg.point.x, msg.point.y, msg.point.z]]), axis=0)
+            self.selected_3d_msg.points.append(points)
+            self.points_pub.publish(self.selected_3d_msg)
+            print(f"3D Points : \n{self.selected_3d_points}")
+            self.selection_turn_3d_points = False
+        else:
+            print("[Error] You must select an image point first on OpenCV")
 
     def cv2_show(self):
         while rclpy.ok() and self.is_thread_running:
@@ -88,21 +91,33 @@ class CalibrationProcess(Node):
                 cv2.setMouseCallback("image", self.mouse_callback)
                 cv2.waitKey(1)
 
-
-
     def mouse_callback(self, event, x, y, flags, param):
         if event == cv2.EVENT_LBUTTONDOWN and flags != cv2.EVENT_FLAG_CTRLKEY+1:
-            # cv2.circle(self.img, (x, y), 5, (255, 0, 0), -1)
-            self.selected_2d_pos = np.append(self.selected_2d_pos, np.array([[x, y]]), axis=0)
-            print(f"2D image position : \n{self.selected_2d_pos}")
+            if self.selection_turn_3d_points == False:
+                self.selected_2d_pos = np.append(self.selected_2d_pos, np.array([[x, y]]), axis=0)
+                print(f"2D image position : \n{self.selected_2d_pos}")
+                self.selection_turn_3d_points = True
+            else:
+                print("You must select an 3D lidar point on RVIZ")
 
             for point in self.selected_2d_pos:
                     cv2.circle(self.img, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
 
         elif event == cv2.EVENT_LBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+1:
             if len(self.selected_2d_pos) > 0:
-                self.selected_2d_pos = np.delete(self.selected_2d_pos, -1, axis=0)
+                if len(self.selected_2d_pos) == len(self.selected_3d_points):
+                    self.selected_2d_pos = np.delete(self.selected_2d_pos, -1, axis=0)
+                    self.selected_3d_points = np.delete(self.selected_3d_points, -1, axis=0)
+
+                    self.selected_3d_msg.points.pop()
+                    self.points_pub.publish(self.selected_3d_msg)
+                    self.selection_turn_3d_points = False
+                else:
+                    self.selected_2d_pos = np.delete(self.selected_2d_pos, -1, axis=0)
+                    self.selection_turn_3d_points = False
+                    
                 print(f"2D image position 2: \n{self.selected_2d_pos}")
+                print(f"3D Points : \n{self.selected_3d_points}")
 
                 self.img = self.origin_img.copy()
                 for point in self.selected_2d_pos:
@@ -110,8 +125,9 @@ class CalibrationProcess(Node):
                 cv2.imshow("image", self.img)
             else:
                 print("any points did not selected")
+        # elif event == cv2.EVENT_MBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+1:
 
-        elif event == cv2.EVENT_MBUTTONDOWN:
+        elif event == cv2.EVENT_MBUTTONDOWN and flags == cv2.EVENT_FLAG_CTRLKEY+1:
             self.is_thread_running = False
             
             retval, rvec, tvec = cv2.solvePnP(self.selected_3d_points, self.selected_2d_pos, self.CAMERA_INTRINSIC_MATRIX,
