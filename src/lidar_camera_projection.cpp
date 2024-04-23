@@ -19,7 +19,13 @@
 #include <jsoncpp/json/value.h>
 
 using namespace std::chrono_literals;
- 
+
+
+struct ProjectionPoints{
+    cv::Point inRange_points;
+    cv::Scalar color;
+};
+
 class MinimalImagePublisher : public rclcpp::Node {
 public:
     MinimalImagePublisher() : Node("lidar_camera_projection") {
@@ -69,14 +75,13 @@ public:
 
 private:
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
-
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
         is_img = true;
 
         if (is_lidar) {
-            for (const auto &point : inRange_img_points){
-                cv::circle(cv_ptr->image, point, 1, cv::Scalar(0, 0, 255), 1);
+            for (const auto &point : projection_points){
+                cv::circle(cv_ptr->image, point.inRange_points, 1, point.color, 1);
             }
         }
         cv::imshow("projection_image", cv_ptr->image);
@@ -84,8 +89,6 @@ private:
     }
 
     void lidar_callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg) {
-        lidar_msg_ = msg;
-
         pcl::PointCloud<pcl::PointXYZI> cloud_dst;
         pcl::fromROSMsg(*msg, cloud_dst);
         ptr_cloud.reset(new pcl::PointCloud<pcl::PointXYZI>);
@@ -96,6 +99,7 @@ private:
         std::vector<cv::Point3f> points_3d;
         points_3d.reserve(cloud_dst.size());
 
+        // convert pcl to cv vertor
         std::transform(cloud_dst.begin(), cloud_dst.end(), std::back_inserter(points_3d),
                        [](const pcl::PointXYZI& point) {
                            return cv::Point3f(point.x, point.y, point.z);
@@ -108,12 +112,16 @@ private:
         cv::projectPoints(points_3d, rvec, tvec, camera_intrinsic_matrix, camera_dist_coeff, img_points, jacobian);
 
         if (is_img){
-            inRange_img_points.clear();
+            projection_points.clear();
+            // std::cout << "rows : " << img_points.rows << " cols : " << img_points.cols << std::endl;
             for (int i = 0; i < img_points.rows; ++i) {
                 for (int j = 0; j < img_points.cols; ++j) {
                     cv::Point img_point = img_points.at<cv::Point2f>(i, j);
                     if (img_point.x <= cv_ptr->image.size().width && img_point.x >= 0 && img_point.y <= cv_ptr->image.size().height && img_point.y >= 0) {
-                        inRange_img_points.push_back(img_point);
+                        // std::cout << " " << ptr_cloud->points[i].intensity << " " << std::endl;
+                        ProjectionPoints _points {img_point, cv::Scalar(0, 0, 255)};
+                        // cv::applyColorMap( im, im_color, k );
+                        projection_points.push_back(_points);
                     }
                 }
             }
@@ -132,20 +140,16 @@ private:
         }
     }
 
-
     cv_bridge::CvImagePtr cv_ptr;
     
     rclcpp::TimerBase::SharedPtr timer_;
 
-    sensor_msgs::msg::Image::SharedPtr img_msg_;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr img_sub_;
-
-    sensor_msgs::msg::PointCloud2::SharedPtr lidar_msg_;
     rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_sub_;
 
     cv::Mat rvec, tvec, camera_intrinsic_matrix, camera_dist_coeff;
     pcl::PointCloud<pcl::PointXYZI>::Ptr ptr_cloud;
-    std::vector<cv::Point> inRange_img_points;
+    std::vector<ProjectionPoints> projection_points;
 
     bool is_lidar, is_img;
     size_t count_;
