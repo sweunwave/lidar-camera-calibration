@@ -17,6 +17,7 @@ def generate_launch_description():
             emulate_tty=True,
             parameters=[
                 {"camera_params_path" : os.path.join(package_dir, "params", "camera_intrinsic.json")},
+                {"calibration_params_path" : os.path.join(package_dir, "params", "calibration_params.json")},
             ]),
 
         Node(

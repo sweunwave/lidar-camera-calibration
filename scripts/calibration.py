@@ -26,11 +26,15 @@ class CalibrationProcess(Node):
         super().__init__('image_process')
 
         self.declare_parameter('camera_params_path', rclpy.Parameter.Type.STRING)
-        json_path = self.get_parameter('camera_params_path')
-        json_data = self.read_json_file(json_path.value)
+        self.declare_parameter('calibration_params_path', rclpy.Parameter.Type.STRING)
 
-        self.CAMERA_INTRINSIC_MATRIX = np.array(json_data['intrinsic_matrix'])
-        self.DIST_COEFFS = np.array(json_data['dist_coeffs'])
+        camera_json_path = self.get_parameter('camera_params_path')
+        camera_json_data = self.read_json_file(camera_json_path.value)
+
+        self.calib_json_path = self.get_parameter('calibration_params_path')
+
+        self.CAMERA_INTRINSIC_MATRIX = np.array(camera_json_data['intrinsic_matrix'])
+        self.DIST_COEFFS = np.array(camera_json_data['dist_coeffs'])
 
         # subscriber
         self.img_sub = self.create_subscription(Image, "/camera1/image_raw", self.image_callback, 10)
@@ -53,6 +57,9 @@ class CalibrationProcess(Node):
         self.total_selected_3d_points = np.empty((0, 3), dtype=np.float32)
         self.selected_3d_msg = PointCloud() 
         self.is_points = False
+
+        # calibration params dict
+        self.calibration_result = {}
 
     def image_callback(self, msg):
         img = self.bridge.imgmsg_to_cv2(msg)
@@ -157,6 +164,13 @@ class CalibrationProcess(Node):
 
                 print(f"tvec solveRansac\n{translation_vector}")
                 print(f"tvec solve \n{tvec}")
+
+                self.calibration_result['rvec'] = rotation_vector.tolist()
+                self.calibration_result['tvec'] = translation_vector.tolist()
+
+                self.write_json_file(data=self.calibration_result, file_path=self.calib_json_path.value)
+
+                print("Saved cablibration params on params/calbration_params.json")
             else:
                 print("Must select at least 6 points")
 
@@ -164,6 +178,10 @@ class CalibrationProcess(Node):
         with open(file_path, 'r') as json_file:
             data = json.load(json_file)
         return data
+    
+    def write_json_file(self, data:dict, file_path:str):
+        with open(file_path, 'w') as json_file:
+            json.dump(data, json_file)
 
 def main(args=None):
     rclpy.init(args=args)
