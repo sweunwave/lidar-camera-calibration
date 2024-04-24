@@ -97,12 +97,20 @@ private:
         // std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
 
         std::vector<cv::Point3f> points_3d;
+        std::vector<float> intensities;
         points_3d.reserve(cloud_dst.size());
+        intensities.reserve(cloud_dst.size());
 
         // convert pcl to cv vertor
         std::transform(cloud_dst.begin(), cloud_dst.end(), std::back_inserter(points_3d),
                        [](const pcl::PointXYZI& point) {
                            return cv::Point3f(point.x, point.y, point.z);
+                       });
+
+        // get intensity vector
+        std::transform(cloud_dst.begin(), cloud_dst.end(), std::back_inserter(intensities),
+                       [](const pcl::PointXYZI& point) {
+                           return point.intensity;
                        });
 
         // std::chrono::duration<double>sec = std::chrono::system_clock::now() - start;
@@ -113,14 +121,19 @@ private:
 
         if (is_img){
             projection_points.clear();
+            auto minmax = std::minmax_element(intensities.begin(), intensities.end());
+            std::cout << "min: " << *(minmax.first) << std::endl;
+            std::cout << "max: " << *(minmax.second) << std::endl;
             // std::cout << "rows : " << img_points.rows << " cols : " << img_points.cols << std::endl;
             for (int i = 0; i < img_points.rows; ++i) {
                 for (int j = 0; j < img_points.cols; ++j) {
                     cv::Point img_point = img_points.at<cv::Point2f>(i, j);
                     if (img_point.x <= cv_ptr->image.size().width && img_point.x >= 0 && img_point.y <= cv_ptr->image.size().height && img_point.y >= 0) {
                         // std::cout << " " << ptr_cloud->points[i].intensity << " " << std::endl;
+
+                        // @todo intensity to rgb 
+                        cv::Scalar color{ptr_cloud->points[i].intensity, ptr_cloud->points[i].intensity, ptr_cloud->points[i].intensity};
                         ProjectionPoints _points {img_point, cv::Scalar(0, 0, 255)};
-                        // cv::applyColorMap( im, im_color, k );
                         projection_points.push_back(_points);
                     }
                 }
