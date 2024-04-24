@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 '''
-Author : sweunwave
+Author : @sweunwave
 LiDAR - Camera Calibration based on ROS2
 '''
 

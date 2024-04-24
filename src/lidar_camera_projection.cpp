@@ -19,8 +19,12 @@
 #include <jsoncpp/json/json.h>
 #include <jsoncpp/json/value.h>
 
-using namespace std::chrono_literals;
+/*
+Author : @sweunwave
+LiDAR - Camera Calibration based on ROS2
+*/
 
+using namespace std::chrono_literals;
 
 struct ProjectionPoints{
     cv::Point inRange_points;
