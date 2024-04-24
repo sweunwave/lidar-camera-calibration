@@ -20,13 +20,9 @@ find_package(pcl_ros REQUIRED)
 add_executable(lidar_camera_projection src/lidar_camera_projection.cpp)
 ament_target_dependencies(lidar_camera_projection rclcpp std_msgs sensor_msgs cv_bridge OpenCV image_transport pcl_conversions pcl_ros)
 
-add_executable(pcl_test src/pcl_test.cpp)
-ament_target_dependencies(pcl_test rclcpp std_msgs sensor_msgs pcl_conversions pcl_ros)
-
 # install
 install(TARGETS
   lidar_camera_projection
-  pcl_test
   DESTINATION lib/${PROJECT_NAME}
 )
 
