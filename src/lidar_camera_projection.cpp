@@ -172,10 +172,10 @@ private:
                         unsigned int g = static_cast<unsigned int>(value <= 255/2 ? value + 255/2 : 255 - (value-255/2));
                         unsigned int r = static_cast<unsigned int>(value);
 
-                        if (value >= 125){
-                            std::cout << "intensity : " << value << std::endl;
-                            std::cout << "b g r : " << b << " " << g << " " << r << std::endl;
-                        }
+                        // if (value >= 125){
+                        //     std::cout << "intensity : " << value << std::endl;
+                        //     std::cout << "b g r : " << b << " " << g << " " << r << std::endl;
+                        // }
                         ProjectionPoints _points {img_point, cv::Scalar(b, g, r)};
                         // ProjectionPoints _points {img_point, cv::Scalar(0, 0, 255)};
                         projection_points.push_back(_points);
