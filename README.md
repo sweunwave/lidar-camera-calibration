@@ -18,7 +18,6 @@ sudo apt install ros-$DISTRO-camera-calibration
 ```
 ### 2. Edit the ```params/camera_intrinsic.json``` from step 1 result
 ```json
-// params/camera_intrinsic.json
 {
     "intrinsic_matrix": [
         [
@@ -78,6 +77,16 @@ ros2 launch lidar-camera-calibration calibration.launch.py
 ### [LiDAR-Camera calibration user interface demo](https://www.youtube.com/watch?v=qBrfR-YOHWM)
 
 <img src="readme/interface.png">
+
+* Mouse Left
+  * Select OpenCV pixel
+  * Select PointCloud on RVIZ2 (activate **Publish Point**)
+* CTRL + Mouse Left
+  * Remove the recently selected points
+* Mouse Middle(Wheel)
+  * Save the selected points of the scene
+* CTRL + Mouse Middle(Wheel)
+  * Calculate the PnPsolve (get transformation matrix)
 
 ### 5. Run Projection.launch.py
 ```
