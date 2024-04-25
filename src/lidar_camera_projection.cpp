@@ -157,24 +157,27 @@ private:
 
         if (is_img){
             projection_points.clear();
-            std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
             for (int i = 0; i < img_points.rows; ++i) {
                 for (int j = 0; j < img_points.cols; ++j) {
                     cv::Point img_point = img_points.at<cv::Point2f>(i, j);
                     if (img_point.x <= cv_ptr->image.size().width && img_point.x >= 0 && img_point.y <= cv_ptr->image.size().height && img_point.y >= 0) {
-                        // auto value = static_cast<unsigned int>((ptr_cloud->points[i].intensity / *(minmax.second)) * 255.0);
-
                         // @todo : Convert intensity to RGB       
-                        auto _intensity = dst.points[i].intensity;
-                        unsigned int b = static_cast<unsigned int>(*(minmax.second) - _intensity);
-                        unsigned int g = static_cast<unsigned int>(_intensity <= *(minmax.second)/2 ? _intensity + *(minmax.second)/2 : *(minmax.second) - _intensity);
-                        unsigned int r = static_cast<unsigned int>(_intensity);
+                        // auto _intensity = dst.points[i].intensity;
+                        // unsigned int b = static_cast<unsigned int>(*(minmax.second) - _intensity);
+                        // unsigned int g = static_cast<unsigned int>(_intensity <= *(minmax.second)/2 ? _intensity + *(minmax.second)/2 : *(minmax.second) - _intensity);
+                        // unsigned int r = static_cast<unsigned int>(_intensity);
 
-                        // std::cout << "intensity : " << _intensity << std::endl;
-                        // std::cout << "b g r : " << b << " " << g << " " << r << std::endl;
+                        auto value = static_cast<unsigned int>((dst.points[i].intensity / *(minmax.second)) * 255.0);
+                        unsigned int b = static_cast<unsigned int>(255 - value);
+                        unsigned int g = static_cast<unsigned int>(value <= 255/2 ? value + 255/2 : 255 - (value-255/2));
+                        unsigned int r = static_cast<unsigned int>(value);
 
-                        // ProjectionPoints _points {img_point, cv::Scalar(g/2, r/2, b)};
-                        ProjectionPoints _points {img_point, cv::Scalar(0, 0, 255)};
+                        if (value >= 125){
+                            std::cout << "intensity : " << value << std::endl;
+                            std::cout << "b g r : " << b << " " << g << " " << r << std::endl;
+                        }
+                        ProjectionPoints _points {img_point, cv::Scalar(b, g, r)};
+                        // ProjectionPoints _points {img_point, cv::Scalar(0, 0, 255)};
                         projection_points.push_back(_points);
                     }
                 }
